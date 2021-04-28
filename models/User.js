@@ -14,7 +14,7 @@ const userSchema = new Schema({
   password:{
     type: String, 
     required: [true, 'Please enter the password'],
-    minlength: [6, 'Minimum password length is 6 characters']
+    minlength: [4, 'Minimum password length is 4 characters']
   }
 })
 // run function after save userschema to db
