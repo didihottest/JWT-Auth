@@ -3,15 +3,23 @@ const jwt = require('jsonwebtoken')
 
 //handle validations errors
 const handleErrors = (error) => {
-  let errors = {email: '', password: ''}
+  let errors = { email: '', password: '' }
 
   if (error.code === 11000) {
     errors.email = "That email is already registered"
     return errors
   }
   // console.log(error)
-  if (error.message.includes('user validation failed')){
-    Object.values(error.errors).forEach(({properties})=>{
+  if (error.message == "incorrect email") {
+    errors.email = "that email is not registered"
+  }
+
+  if (error.message == 'incorrect password') {
+    errors.password = "Wrong Password"
+  }
+
+  if (error.message.includes('user validation failed')) {
+    Object.values(error.errors).forEach(({ properties }) => {
       errors[properties.path] = properties.message
     })
   }
@@ -19,42 +27,56 @@ const handleErrors = (error) => {
 }
 
 
-exports.signup_get = (req, res)=>{
+exports.signup_get = (req, res) => {
   res.render('signup')
 }
 
-exports.login_get = (req, res)=>{
+exports.login_get = (req, res) => {
   res.render('login')
 }
 // set token expire time
 const maxAge = 3 * 24 * 60 * 60
-const createToken = (id)=>{
+const createToken = (id) => {
   //{id is value}, {'secret is encrypt key (value secret can be changed as you like'}, { expiresIn is for max age of token }
-  return jwt.sign({id}, 'secret', {
+  return jwt.sign({ id }, 'secret', {
     expiresIn: maxAge
   })
 }
 
-exports.signup_post = async (req, res)=>{
-  const {email, password}= req.body;
+exports.signup_post = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    const user = await User.create({email, password})
+    const user = await User.create({ email, password })
     const token = createToken(user._id)
-    res.cookie('jwt', token, {httpOnly: true, maxAge: maxAge * 1000})
-    res.status(201).json({user:user._id})
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+    res.status(201).json({ user: user._id })
   } catch (error) {
     if (error) {
       const errorMessage = handleErrors(error)
       console.log(errorMessage)
       res.status(400).json({
-        error:errorMessage
+        error: errorMessage
       })
-    }   
+    }
   }
 }
 
-exports.login_post = (req, res)=>{
-  const {email, password}= req.body;
+exports.login_post = async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const user = await User.login(email, password)
+    const token = createToken(user._id)
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+    res.status(201).json({ user: user._id })
+  } catch (error) {
+    // const errorMessage = error.message
+    const errorMessage = handleErrors(error)
+    console.log(errorMessage)
+    console.log(errorMessage)
+    if (error) {
+      res.status(400).json({ error: errorMessage })
+    }
+  }
 }
 
