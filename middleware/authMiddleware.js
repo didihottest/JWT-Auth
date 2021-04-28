@@ -21,5 +21,5 @@ const requireAuth = (req, res, next)=>{
 }
 
 // check current user
-
+//
 module.exports= {requireAuth}
