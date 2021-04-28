@@ -81,7 +81,7 @@ exports.login_post = async (req, res) => {
 }
 
 exports.logout_get = (req, res) => {
-  res.cookies('jwt', '', {maxAge:1})
+  res.cookie('jwt', '', {maxAge:1})
   res.redirect('/')
 }
 //
